@@ -1,3 +1,3 @@
 output "Rancher_Server_IP" {
-  value = "${openstack_compute_floatingip_associate_v2.server-fip-assoc.floating_ip}"
+  value = "https://${openstack_compute_floatingip_v2.rancher-fip.address}"
 }

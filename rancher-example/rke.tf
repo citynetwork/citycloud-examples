@@ -1,5 +1,5 @@
 resource "rke_cluster" "cluster" {
-  cluster_name = "rancher-cluster"
+  cluster_name = "${var.prefix}-cluster"
 
   dynamic nodes {
     for_each = openstack_compute_floatingip_associate_v2.nodes-fip-assoc
@@ -9,6 +9,8 @@ resource "rke_cluster" "cluster" {
       role = ["controlplane", "etcd", "worker"]
     }
   }
+
+  ssh_key_path = "~/.ssh/id_rsa"
 
   # Disable port check validation between nodes
   disable_port_check = false

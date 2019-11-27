@@ -1,0 +1,12 @@
+#cloud-config
+ssh_authorized_keys:
+  - ${custom_ssh}
+
+rancher:
+  services:
+    rancher-server:
+      image: rancher/rancher
+      restart: unless-stopped
+      ports:
+      - 80:80
+      - 443:443
