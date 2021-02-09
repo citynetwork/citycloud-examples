@@ -23,6 +23,9 @@ resource "openstack_networking_router_interface_v2" "router-if" {
 
 resource "openstack_compute_floatingip_v2" "rancher-fip" {
   pool  = data.openstack_networking_network_v2.ext-net.id
+  lifecycle {
+    ignore_changes = [pool]
+  }
 }
 
 resource "openstack_compute_floatingip_associate_v2" "rancher-fip-assoc" {
@@ -30,14 +33,31 @@ resource "openstack_compute_floatingip_associate_v2" "rancher-fip-assoc" {
   instance_id = openstack_compute_instance_v2.rancher.id
 }
 
-resource "openstack_compute_floatingip_v2" "nodes-fip" {
-  count = 3
+resource "openstack_compute_floatingip_v2" "master-fip" {
+  count = var.n_of_masters
   pool  = data.openstack_networking_network_v2.ext-net.id
+  lifecycle {
+    ignore_changes = [pool]
+  }
 }
 
-resource "openstack_compute_floatingip_associate_v2" "nodes-fip-assoc" {
-  count = 3
-  floating_ip = element(openstack_compute_floatingip_v2.nodes-fip.*.address,count.index+1)
-  instance_id = element(openstack_compute_instance_v2.nodes.*.id,count.index+1)
+resource "openstack_compute_floatingip_v2" "worker-fip" {
+  count = var.n_of_workers
+  pool  = data.openstack_networking_network_v2.ext-net.id
+  lifecycle {
+    ignore_changes = [pool]
+  }
+}
+
+resource "openstack_compute_floatingip_associate_v2" "master-fip-assoc" {
+  count = var.n_of_masters
+  floating_ip = element(openstack_compute_floatingip_v2.master-fip.*.address,count.index+1)
+  instance_id = element(openstack_compute_instance_v2.master.*.id,count.index+1)
+}
+
+resource "openstack_compute_floatingip_associate_v2" "worker-fip-assoc" {
+  count = var.n_of_workers
+  floating_ip = element(openstack_compute_floatingip_v2.worker-fip.*.address,count.index+1)
+  instance_id = element(openstack_compute_instance_v2.worker.*.id,count.index+1)
 }
 
