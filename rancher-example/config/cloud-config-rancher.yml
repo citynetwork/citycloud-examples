@@ -2,11 +2,16 @@
 ssh_authorized_keys:
   - ${custom_ssh}
 
-rancher:
-  services:
-    rancher-server:
-      image: rancher/rancher
-      restart: unless-stopped
-      ports:
-      - 80:80
-      - 443:443
+runcmd:
+  - apt-get update
+  - apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - apt-get update
+# Installs current Docker supported version for RKE cluster
+  - apt-get install -y docker-ce=5:19.03.11~3-0~ubuntu-focal docker-ce-cli=5:19.03.11~3-0~ubuntu-focal containerd.io
+  - usermod -aG docker $USER
+  - newgrp docker
+  - systemctl enable docker
+  - chmod 666 /var/run/docker.sock
+  - docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:latest
